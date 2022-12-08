@@ -1,0 +1,6 @@
+interval = 600
+
+[[links]]
+mastodon_server_url = "https://mastodon.social/"
+mastodon_user = "defelo"
+webhook_url = "https://discord.com/api/webhooks/..."
