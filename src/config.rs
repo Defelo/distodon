@@ -11,6 +11,7 @@ pub struct Link {
 #[derive(Deserialize, Debug)]
 pub struct Config {
     pub interval: u64,
+    pub chunk_size: usize,
     pub links: Vec<Link>,
 }
 

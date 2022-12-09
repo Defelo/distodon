@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::{
     collections::hash_map::DefaultHasher,
     fs,
@@ -7,7 +8,7 @@ use std::{
     time::Duration,
 };
 
-use anyhow::Context;
+use anyhow::{ensure, Context};
 use log::{debug, error, info};
 use regex::Regex;
 use url::Url;
@@ -59,37 +60,48 @@ impl Link {
             .context("fetching posts")
     }
 
-    fn run(&mut self) -> anyhow::Result<()> {
+    fn run(&mut self, chunk_size: usize) -> anyhow::Result<()> {
         debug!("run for {:?} on {}", self.account_id, self.mastodon_url);
         let title_regex = Regex::new("<.*?>")?;
-        for (post, media) in self
+        for chunk in &self
             .fetch_new_posts(&self.last_id)?
             .iter()
             .filter_map(|post| post.media_attachments.first().map(|ma| (post, ma)))
             .filter(|(_, media)| matches!(media.type_, mastodon::AttachmentType::Image))
             .rev()
+            .chunks(chunk_size)
         {
-            debug!("got new post: {post:?} {media:?}");
+            let posts = chunk.collect::<Vec<_>>();
+            if posts.is_empty() {
+                continue;
+            }
+
+            let mut embeds = Vec::with_capacity(posts.len());
+            for &(post, media) in &posts {
+                debug!("got new post: {post:?} {media:?}");
+                embeds.push(Embed {
+                    title: title_regex.replace_all(&post.content, "").into_owned(),
+                    timestamp: &post.created_at,
+                    image: EmbedImage { url: &media.url },
+                    url: &post.url,
+                    author: EmbedAuthor {
+                        name: &post.account.display_name,
+                        url: &post.account.url,
+                        icon_url: &post.account.avatar,
+                    },
+                    color: 0x595aff,
+                });
+                self.last_id = self.last_id.max(post.id);
+            }
+
             execute_webhook(
                 self.webhook_url.clone(),
                 &WebhookPayload {
-                    embeds: &[&Embed {
-                        title: &title_regex.replace_all(&post.content, ""),
-                        timestamp: &post.created_at,
-                        image: &EmbedImage { url: &media.url },
-                        url: &post.url,
-                        author: &EmbedAuthor {
-                            name: &post.account.display_name,
-                            url: &post.account.url,
-                            icon_url: &post.account.avatar,
-                        },
-                        color: 0x595aff,
-                    }],
+                    embeds: &embeds,
                     username: "Mastodon",
                     avatar_url: "https://static-cdn.mastodon.social/packs/media/icons/android-chrome-512x512-ccb53c9fcbb5f61bf741cc54998318f0.png",
                 },
             )?;
-            self.last_id = self.last_id.max(post.id);
         }
         Ok(())
     }
@@ -101,6 +113,11 @@ fn main() -> anyhow::Result<()> {
     info!("loading config");
     let config = config::load_config()?;
     debug!("{config:?}");
+
+    ensure!(
+        (1..=10).contains(&config.chunk_size),
+        "chunk_size cannot be 0 or greater than 10"
+    );
 
     let path = Path::new("data");
     if !path.is_dir() {
@@ -129,7 +146,7 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         for link in &mut links {
-            if let Err(err) = link.run() {
+            if let Err(err) = link.run(config.chunk_size) {
                 error!("{err:#}");
             }
             if let Err(err) =

@@ -7,15 +7,15 @@ use crate::http::{self, RequestBuilderExt};
 pub struct WebhookPayload<'a> {
     pub username: &'a str,
     pub avatar_url: &'a str,
-    pub embeds: &'a [&'a Embed<'a>],
+    pub embeds: &'a [Embed<'a>],
 }
 
 #[derive(Serialize, Debug)]
 pub struct Embed<'a> {
-    pub title: &'a str,
-    pub image: &'a EmbedImage<'a>,
+    pub title: String,
+    pub image: EmbedImage<'a>,
     pub url: &'a Url,
-    pub author: &'a EmbedAuthor<'a>,
+    pub author: EmbedAuthor<'a>,
     pub color: u32,
     pub timestamp: &'a str,
 }
