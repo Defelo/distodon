@@ -1,0 +1,13 @@
+version: '3.10'
+
+services:
+  distodon:
+    image: ghcr.io/defelo/distodon
+    build: .
+    restart: always
+    init: true
+    environment:
+      RUST_LOG: info,distodon=debug
+    volumes:
+      - ./config.toml:/config.toml:ro
+      - ./.data:/data
