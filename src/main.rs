@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::{
     collections::hash_map::DefaultHasher,
     fs,
@@ -9,16 +8,16 @@ use std::{
 };
 
 use anyhow::{ensure, Context};
+use itertools::Itertools;
 use log::{debug, error, info};
 use regex::Regex;
 use url::Url;
-
-use crate::discord::{check_webhook, Embed, EmbedAuthor, EmbedImage};
 
 use self::{
     discord::{execute_webhook, WebhookPayload},
     mastodon::{fetch_posts, Id, Post},
 };
+use crate::discord::{check_webhook, Embed, EmbedAuthor, EmbedImage};
 
 mod config;
 mod discord;
