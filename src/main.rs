@@ -98,7 +98,7 @@ impl Link {
                 &WebhookPayload {
                     embeds: &embeds,
                     username: "Mastodon",
-                    avatar_url: "https://static-cdn.mastodon.social/packs/media/icons/android-chrome-512x512-ccb53c9fcbb5f61bf741cc54998318f0.png",
+                    avatar_url: "https://raw.githubusercontent.com/mastodon/joinmastodon/c6fcdf841804349a95f7271c4e0f743974854ff2/public/app-icon.png",
                 },
             )?;
         }
