@@ -9,13 +9,13 @@ lto = true
 codegen-units = 1
 
 [dependencies]
-anyhow = { version = "1.0.90", default-features = false, features = ["std"] }
+anyhow = { version = "1.0.91", default-features = false, features = ["std"] }
 config = { version = "0.14.0", default-features = false, features = ["toml"] }
 itertools = { version = "0.13.0", default-features = false, features = ["use_alloc"] }
 log = { version = "0.4.22", default-features = false }
 pretty_env_logger = { version = "0.5.0", default-features = false }
 regex = { version = "1.11.0", default-features = false }
 reqwest = { version = "0.12.8", default-features = false, features = ["blocking", "json", "rustls-tls-webpki-roots"] }
-serde = { version = "1.0.212", default-features = false, features = ["derive"] }
+serde = { version = "1.0.213", default-features = false, features = ["derive"] }
 serde-aux = { version = "4.5.0", default-features = false }
 url = { version = "2.5.2", default-features = false, features = ["serde"] }
